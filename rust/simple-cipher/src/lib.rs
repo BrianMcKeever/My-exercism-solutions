@@ -3,7 +3,7 @@ use std::convert::TryFrom;
 use std::iter;
 
 fn shift_char(letter: char, key: char, positive: bool) -> char {
-    let key_index = key as u8 - 'a' as u8;
+    let key_index = key as u8 - b'a';
     let letter_index = if positive {
         letter as u8 + key_index
     } else {
@@ -11,9 +11,9 @@ fn shift_char(letter: char, key: char, positive: bool) -> char {
     };
     let mut shifted = u8::try_from(letter_index).unwrap();
     let alphabet_length = 26;
-    if shifted < 'a' as u8 {
+    if shifted < b'a' {
         shifted += alphabet_length;
-    } else if shifted >= 'a' as u8 + alphabet_length {
+    } else if shifted >= b'a' + alphabet_length {
         shifted -= alphabet_length;
     }
     shifted as char
@@ -28,13 +28,13 @@ fn shift(key: &str, input: &str, positive: bool) -> String {
 }
 
 fn is_valid_key(key: &str) -> bool {
-    if key.len() == 0 {
+    if key.is_empty() {
         return false;
     }
     if !key.chars().all(|x| x.is_alphabetic() && x.is_lowercase()) {
         return false;
     }
-    return true;
+    true
 }
 
 pub fn encode(key: &str, s: &str) -> Option<String> {
@@ -53,7 +53,7 @@ pub fn decode(key: &str, s: &str) -> Option<String> {
 
 pub fn encode_random(s: &str) -> (String, String) {
     let mut rng = thread_rng();
-    let key = iter::repeat_with(|| rng.gen_range('a' as u8, 'z' as u8 + 1) as char)
+    let key = iter::repeat_with(|| rng.gen_range(b'a', b'z' + 1) as char)
         .take(100)
         .collect::<String>();
     (key.clone(), shift(&key, s, true))
