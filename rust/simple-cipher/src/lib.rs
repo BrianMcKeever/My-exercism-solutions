@@ -2,12 +2,12 @@ use rand::{thread_rng, Rng};
 use std::convert::TryFrom;
 use std::iter;
 
-fn shift_within_range(letter: char, key: char, positive: bool) -> char {
-    let key_index = key as i16 - 'a' as i16;
+fn shift_char(letter: char, key: char, positive: bool) -> char {
+    let key_index = key as u8 - 'a' as u8;
     let letter_index = if positive {
-        letter as i16 + key_index
+        letter as u8 + key_index
     } else {
-        letter as i16 - key_index
+        letter as u8 - key_index
     };
     let mut shifted = u8::try_from(letter_index).unwrap();
     let alphabet_length = 26;
@@ -23,7 +23,7 @@ fn shift(key: &str, input: &str, positive: bool) -> String {
     input
         .chars()
         .zip(key.chars().cycle())
-        .map(|(l, k)| shift_within_range(l, k, positive))
+        .map(|(l, k)| shift_char(l, k, positive))
         .collect()
 }
 
