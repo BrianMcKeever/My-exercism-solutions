@@ -102,14 +102,7 @@ impl<'a, T: Copy + PartialEq + std::fmt::Debug> Reactor<'a, T> {
         dependencies: &[CellID],
         compute_func: F,
     ) -> Result<ComputeCellID, CellID> {
-        let mut values = Vec::new();
-        for dependency in dependencies {
-            let value = self.value(*dependency);
-            if value.is_none() {
-                return Err(*dependency);
-            }
-            values.push(value.unwrap());
-        }
+        let values = self.dependencies_to_values(dependencies)?;
         let value = compute_func(&values);
         let c = Compute {
             dependencies: dependencies.to_vec(),
@@ -129,6 +122,10 @@ impl<'a, T: Copy + PartialEq + std::fmt::Debug> Reactor<'a, T> {
         }
         self.compute_cells.push(c);
         Ok(id)
+    }
+
+    fn dependencies_to_values(&self, dependencies: &[CellID]) -> Result<Vec<T>, CellID> {
+        dependencies.iter().copied().map(|x| self.value(x).ok_or(x)).collect()
     }
 
     // Retrieves the current value of the cell, or None if the cell does not exist.
@@ -182,11 +179,7 @@ impl<'a, T: Copy + PartialEq + std::fmt::Debug> Reactor<'a, T> {
         }
         let compute = compute.unwrap();
         let old_value = compute.value;
-        let mut values = Vec::new();
-        for dependency in &compute.dependencies {
-            let value = self.value(*dependency);
-            values.push(value.unwrap());
-        }
+        let values = self.dependencies_to_values(&compute.dependencies).unwrap();
         let compute = &mut self.compute_cells[id];
         compute.value = (compute.compute_func)(&values);
         if compute.value != old_value {
