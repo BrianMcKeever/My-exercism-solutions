@@ -64,6 +64,17 @@ impl<T: Copy + PartialEq> Input<T> {
 }
 
 impl<'a, T: Copy + PartialEq> Compute<'a, T> {
+    fn new<F: Fn(&[T]) -> T + 'a>(value: T, dependencies: &[CellID], compute_func: F) -> Self {
+        Compute {
+            dependencies: dependencies.to_vec(),
+            value: value,
+            compute_func: Box::new(compute_func),
+            callbacks: HashMap::new(),
+            callback_id: 0,
+            old_value: value,
+            dependants: Vec::new(),
+        }
+    }
     fn add_dependant(&mut self, compute_cell: ComputeCellID) {
         self.dependants.push(compute_cell);
     }
@@ -104,15 +115,7 @@ impl<'a, T: Copy + PartialEq + std::fmt::Debug> Reactor<'a, T> {
     ) -> Result<ComputeCellID, CellID> {
         let values = self.dependencies_to_values(dependencies)?;
         let value = compute_func(&values);
-        let c = Compute {
-            dependencies: dependencies.to_vec(),
-            value: value,
-            compute_func: Box::new(compute_func),
-            callbacks: HashMap::new(),
-            callback_id: 0,
-            old_value: value,
-            dependants: Vec::new(),
-        };
+        let c = Compute::new(value, dependencies, compute_func);
         let id = ComputeCellID(self.compute_cells.len());
         for cell_id in dependencies {
             match cell_id {
