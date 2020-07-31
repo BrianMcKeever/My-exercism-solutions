@@ -26,5 +26,5 @@ pub fn nth(n: u32) -> u32 {
             number_primes += 1;
         }
     }
-    return -1; //just gonna ignore that this will choke on big enough inputs
+    panic!("bigger than u32"); //just gonna ignore that this will choke on big enough inputs
 }
